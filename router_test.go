@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/clevergo/clevergo"
 	"github.com/gin-gonic/gin"
 	"github.com/labstack/echo"
 )
@@ -624,4 +625,49 @@ func BenchmarkGinParseAPI(b *testing.B) {
 	g := gin.New()
 	loadGinRoutes(g, parseAPI)
 	benchmarkRoutes(b, g, parseAPI)
+}
+
+func loadCleverGoRoutes(app *clevergo.Application, routes []*Route) {
+	for _, r := range routes {
+		switch r.Method {
+		case "GET":
+			app.Get(r.Path, clevergoHandler)
+		case "POST":
+			app.Post(r.Path, clevergoHandler)
+		case "PATCH":
+			app.Patch(r.Path, clevergoHandler)
+		case "PUT":
+			app.Put(r.Path, clevergoHandler)
+		case "DELETE":
+			app.Delete(r.Path, clevergoHandler)
+		}
+	}
+}
+
+var clevergoHandler = func(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("OK"))
+}
+
+func BenchmarkCleverGoStatic(b *testing.B) {
+	app := clevergo.New("")
+	loadCleverGoRoutes(app, static)
+	benchmarkRoutes(b, app, static)
+}
+
+func BenchmarkCleverGoGitHubAPI(b *testing.B) {
+	app := clevergo.New("")
+	loadCleverGoRoutes(app, githubAPI)
+	benchmarkRoutes(b, app, githubAPI)
+}
+
+func BenchmarkCleverGoGplusAPI(b *testing.B) {
+	app := clevergo.New("")
+	loadCleverGoRoutes(app, gplusAPI)
+	benchmarkRoutes(b, app, gplusAPI)
+}
+
+func BenchmarkCleverGoParseAPI(b *testing.B) {
+	app := clevergo.New("")
+	loadCleverGoRoutes(app, parseAPI)
+	benchmarkRoutes(b, app, parseAPI)
 }
